@@ -168,8 +168,8 @@ Server starts at: `http://localhost:8081`
 ## Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
+- GitHub: https://github.com/riddhimaradiya
+- LinkedIn: www.linkedin.com/in/riddhi-mardiya
 
 ---
 
