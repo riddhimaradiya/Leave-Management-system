@@ -26,6 +26,9 @@ public class LeaveService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     //get the currently logged-in employee from JWT
     private Employee getCurrentEmployee() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -56,6 +59,13 @@ public class LeaveService {
         leaveRequest.setStatus(LeaveStatus.PENDING);
 
         LeaveRequest saved = leaveRequestRepository.save(leaveRequest);
+
+        notificationService.sendAppliedNotification(
+                employee.getName(),
+                "manager@company.com",
+                (int) saved.getNumberOfDays()
+        );
+
         return LeaveResponse.fromEntity(saved);
     }
 
@@ -98,7 +108,14 @@ public class LeaveService {
         }
         leaveRequest.setStatus(LeaveStatus.APPROVED);
         leaveRequest.setRemarks("Approved by " + manager.getName());
-        return LeaveResponse.fromEntity(leaveRequestRepository.save(leaveRequest));
+        LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+
+        notificationService.sendLeaveApprovedNotification(
+                leaveRequest.getEmployee().getName(),
+                leaveRequest.getEmployee().getEmail(),
+                (int) leaveRequest.getNumberOfDays()
+        );
+        return LeaveResponse.fromEntity(updated);
     }
 
     //Reject a leave request(Manager Only)
@@ -123,8 +140,15 @@ public class LeaveService {
         leaveRequest.setStatus(LeaveStatus.REJECTED);
         leaveRequest.setRemarks(remarks != null ? remarks : " Rejected by " + manager.getName());
 
-        return LeaveResponse.fromEntity(leaveRequestRepository.save(leaveRequest));
-    }
+        LeaveRequest updated = leaveRequestRepository.save(leaveRequest);
+
+        notificationService.sendRejectedNotification(
+                leaveRequest.getEmployee().getName(),
+                leaveRequest.getEmployee().getEmail(),
+                remarks
+        );
+
+        return LeaveResponse.fromEntity(updated);    }
 
     //Cancel a Leave (employee can cancel own pending leave)
     @Transactional
